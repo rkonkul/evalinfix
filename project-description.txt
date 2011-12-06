@@ -1,0 +1,171 @@
+CS 340 - Standard Template Library
+Project 3
+
+Due date: Tuesday, October 18, 2011 at 11:59 pm
+
+Project turned in by the Due Date will earn an extra 10% on the project grade. Projects may be submitted through 11:59 pm on Thursday, October 20th.
+
+For this assignment, you are to use the Standard Template Library and a Complex Number class (that you create) to create an infix expression evaluator. The statements that you must evaluate will be in the form of:
+
+    <expression>
+
+    When an <expression> is given by itself in the input, the value of the expression is to be output to standard output.
+
+    =   <varname>   <expression>
+
+    When an <expression> is preceded by "= <varname>", the value of the expression is stored under the key of <varname>.
+
+    @ <filename>
+
+    When the @ symbol (at) is given as the first non-white space character on the line, the line is to contain a filename. You are to read commands from this file until the end of the file, then return to reading from the current input source. If you encounter the . command (see below), quit the program. If you encounter the # command (see below), echo the line to the standard output. Note: you need to add an error check to make sure you don't have an infinite loop when data file X opens data file Y which opens data file X .... You are to use an instance of an STL class to check for this. The use of the set class is strongly recommended in which you keep a set of filenames.
+
+    # comment line
+
+    When the # symbol (pound/sharp) is given as the first non-white space character on the line, treat the line as a comment and ignore the entire line, except when the program is reading from a file (see the @ command above). In this case, echo the comment line to the standard output.
+
+    ?
+
+    When the ? symbol is given as the first non-white space character on the line, print out some help regarding the commands allowed by the program and how to use them.
+
+    .
+
+    When the . symbol (period) is given as the only non-white space character on the line, quit the program. Beware of <expression> statements that start with a floating point value such as .5.
+
+An <expression> is any infix expression that uses the following operators:
+
+    	Operator   	Associativity   	Precedence   	Operation
+( )	Left to Right	Highest	Parenthesized Expression
+-	Right to Left		Unary Minus
+^	Right to Left		Exponentiation
+*, /	Left to Right		Multiplication and Division
++, -	Left to Right	Lowest	Addition and Subtraction
+
+The operands can be either a <varname> or a numeric constant. The <varname> can be any string starting with a letter in either upper or lower case and then containing either letters (upper or lower case) or digits. The constants can be integers, floating points or complex numbers. The integers and floating point numbers can be signed. The complex numbers will be in the form of NR+NIi, where N can be any positive or negative integer or floating point value. Note, positive numbers are expected to be written without the "+" sign, since unary plus is not a known operator in this problem.
+
+For each <expression>, you will first need to convert it from infix to a postfix expression and then evaluate the postfix expression. The algorithms for both of these are given below and contained in the data structure book written by Mark Allen Weiss, Data Structures & Algorithm Analysis in C, starting on page 72 (on page 103 in the C++ edition). This book is the C/C++ version of the text used for CS 202. Both of these algorithms use a stack. You must use the STL class stack for these algorithms. In the infix to post conversion algorithm, you will most likely need to have the stack be a stack of operators. In the evaluation algorithm, you will most likely need to have a stack of complex numbers.
+
+The input will expect only one statement per line. If the statement is to be written on multiple lines, a backslash "\" will be used at the end of each line to indicate the statement will be continued onto the next line. To deal with this, store each expression in the STL class vector. This will allow us not to worry about the unlimited maximum size of each statement.
+Infix to Postfix Conversion
+
+To convert from infix to postfix, we translate one vector (in infix form) to another vector (in postfix form). As the infix vector is scanned from left to right, when an operand is encountered, it is moved directly from the infix vector to the postfix vector. When an operator is encountered in the infix vector, it is not moved directly to the postfix vector, instead it will be pushed on the stack. Depending on what operand is encountered, we may pop operands from the stack before pushing the current operand.
+
+    When a open parenthesis "(" is encountered, it is pushed on the stack.
+    When a close parenthesis ")" is encountered, we pop the stack, writing out all operands to the postfix vector until we pop the corresponding open parenthesis. Neither the open or close parenthesis is placed in the postfix vector. If an open parenthesis is never popped, then we have an imbalance of parentheses and an error has occurred.
+    Since the - symbol is used for both unary minus and subtraction, it needs to be treated specially. The unary minus operator will only be encountered when we are expecting a operand (i.e. at the start of an expression, or after any operator except for the closing parenthsis). When the - symbol is encountered in these circumstances, it is to be treated as the unary minus operator. When the - symbol is encountered in any other circumstance (i.e. after the closing parenthesis or a operand), it is to be treated as the subtraction operators. You will need to distinguish the subtraction operator from the unary minus operator on the operator stack and the postfix expression. How you do this is up to you (perhaps create class or an enumerated type for the operators).
+    When all other operators are encountered, the stack is popped until an operator of lower (or equal) precedence is removed prior to pushing the operator onto the stack. All of these popped operators are written to the postfix vector. If the encountered operator has a left-to-right associativity, operators are popped until an operator of lower precedence is at the top of the stack. If the encountered operator has right-to-left associativity, operators are popped until an operator of lower or equal precedence is at the top of the stack. The one exception is that we never remove the open parenthesis from the stack expect when processing a closing parenthesis.
+    When the end of the infix expression is encountered, all remaining operators are popped from the stack and placed in the postfix expression. If we pop an open parenthesis at this time, then we have an imbalance of parentheses and an error has occurred. 
+
+Postix Expression Evaluation
+
+The postfix vector is now scanned from left to right. When an operand is encountered, its value is pushed onto the stack. When an operator is encountered, some number of values are popped from the stack (two for binary operators, one for unary operators), the operation indicated by the operator is performed and the result is pushed onto the stack (pay attention to which value is the left-hand-side operand and which is the right-hand-side operand). If the stack does not contain two values when an operator is encountered, an error has occurred. When we reach the end of the postfix expression, there should be only one value left on the stack which is the value for the <expression>. If there is not a single value on the stack, then an error has occurred.
+
+The exponentiation operator is to have its second operand value as an integer value. However, if a non-integer value is given, do NOT specify it as an error (yet). If the second operand is not an integer convert it to an integer. This integer must be a value greater than or equal to zero. If a negative value is given, it is an error.
+
+The division operator must not have the second operand value as zero. If a zero value is given, it is an error.
+
+Note: the use of the postfix vector can be avoided, but it is up to you to determine how this is done. However, use of the infix vector will make your life much easier, so use it!!
+Use of <varname>
+
+The <varname>'s are to store the values in the STL class map. This will allow a value evaluated in one statement to be used in another statement. When the operand in an <expression> is a <varname>, your program is to retrieve the value from the map. You must check that <varname> already has a stored value. If not, then an error has occurred. For a statement that begins with an equal sign, you are to store the value of the <expression> (if no error occurred in the <expression>) into the map.
+
+Errors and Extra Credit
+When an error occurs, you are to print out some appropriate message to the standard error and continue evaluation at the next statement. You may assume that all operators and operands are separated by white space. For 10 points extra credit, your program must work even it the operands and operators are not separated by white space. An example input that is not white space separated is:
+
+     val1+(-anotherValue+-32+5i)*-2
+
+The hard part will be determining between the addition operator and the plus sign used to separate the real and imaginary parts of a complex number and between the subtraction operator and the minus sign to indicate a negative constant. If you plan to go for this extra credit, you must specify this in your README file.
+
+The class: Complex
+For this program you are to write your own code to hold a complex number. You may not use the complex number class in the standard template library. The following operators are to be overloaded overloaded for the complex class:
+
+     	
+unary - 	change sign of real and imaginary parts
+^ 	exponentiation - where it left-hand operand is the base and the right-hand operand is the exponent
+See multiplication for polynomial multiplication information
+* 	multiplication - use polynomial multiplication
+(a+bi) * (c+di) = ac + adi + cbi + bdii = ac + adi + cbi - bd
+/ 	division
+X / (a+bi) = (a+-bi) * X / (a2 + b2)
+binary +	addition
+binary - 	subtraction
+= 	assignment (write this one out even if you do not use any dynamic data members)
+<< 	stream output
+
+For the stream output operator, <<, if the value has no imaginary part, only the real part should be written (i.e. the value of 5.275+0.0i should output as 5.275). Also, if both the real and imaginary parts have no fractional value, the value should be written as an integer (i.e. 3.0+0.0i should be 3, 5.0+9.0i should be 5+9i, 0.0+2.0i should be 0+2i. However, -3.0+-3.14159i should be -3.0+-3.14159i). The <math.h> library function modf() may be useful for this conversion.
+
+You are not required to overload the stream input operator, >>, because the assignment first has you read the input into a vector. You will want to write a method (or maybe a constructor!) that takes the infix vector information as parameters and fills/creates an instance of type complex with the proper values. In doing this, as a numeric constant is encountered as an operand, your program must determine if it is an integer constant, a floating point constant or a complex constant (do you need to read one or two numeric value). To determine this, scan forward in the vector to see if after the first numeric value is there a plus sign followed by a numeric constant followed by an "i". There will not be any white space in the complex number, the imaginary numeric constant may contain a negative sign and there will always be a real numeric constant preceeding the imaginary numeric constant. The regular expression for the complex constant is:
+
+	NUM+(-)?NUMi
+
+where NUM is a sequence of one or more digits that may contain a single period. The underlined parts will always exists, the "(-)?" means that the minus sign may not exist.
+
+The class Complex must also have a constructor that takes two parameters. The first parameter corresponds to the real part of the complex number, the second parameter corresponds to the imaginary part. Both of these values are to default to zero if not given. Also, they are to allow for either integer or floating point values. An instance that is created with integer values should print out integer values for its output. Write any other constructors, destructor or methods that you feel are necessary.
+
+Sample Input
+The following sample input has the user typed information bolded. It also assumes that each statement has a prompt of ">". The actual precision of a floating point value may vary from what is shown below.
+
+> 5 + 4
+9
+> 5.0 + 4.0
+
+9
+> 5.2 + 4.3
+
+9.5
+> = value1 5.2 + 4.3
+
+> value1 
+9.5
+> value1 - 6 / 3
+7.5
+> 2 * value1
+
+19
+> @ proj3data1.txt
+# This is a data file for CS 340 MP 3
+#
+# Calculate 7 * 2 + 4 / 2 - 5
+11
+# Store into val: 7 * 2 + 4 / 2 - 5
+# Display val
+11
+# Calculate 3 + - val
+-8
+# Store into val2: - val ^ 3
+# Display val2
+-1331
+# Store into val2: 2 ^ val
+# Display val2
+2048
+
+> val
+11
+> val2
+2048
+
+Below are links to two sample input files. The two are the same except the first has spaces between all operators and operands while the second doesn't have spaces. The second file gives an idea of what to expect from someone trying to get the extra credit.
+
+    Sample Input File
+    Extra Credit Sample Input File
+    Complex Sample Input File 
+
+General Comments
+Your program must be written in good programming style. This includes (but is not limited to) meaningful identifier names, a file header at the beginning of each source code file, a function header at the beginning of the function, proper use of blank lines and indentation to aide in the reading of your code, explanatory "value-added" in-line comments, etc.
+
+The work you turn in must be 100% your own. You are not allowed to share code with any other person (inside this class or not). You may discuss the project with other persons; however, you may not show any code you write to another person nor may you look at any other person's written code.
+
+You are also to write a one to two page program description. This write up must be submitted with your program and be in ASCII text format. This description is to explain your internal data structures, code structures and the algorithms used in your program.
+
+You are to submit this project via the assignment link for Project 3 in Blackboard for CS 340. Be sure to submit all source code and header files as well as your makefile and program description. Failure to turnin all required pieces will result in a lower grade for the assignment.
+What to Hand In:
+
+1.      Your code, including a makefile and a readme file, should be handed in electronically using the turnin command ( see below ).
+
+2.      The makefile should be set up so that the grader can simply type "make" to build your executable program. The name of the resulting executable should be "evalInfix" ( Note case. )
+
+3.      The purpose of the readme file is to make it as easy as possible for the grader to understand your program. If the readme file is too terse, then (s)he can't understand your code; If it is overly verbose, then it is extra work to read the readme file. It is up to you to provide the most effective level of documentation. The readme file should be a plain ASCII text file named "readme" or "readme.txt".
+
+4.      There is no requirement to hand in any printed material. However, if you feel that your program can best be explained through materials that cannot be handed in electronically, ( such as hand-drawn sketches or diagrams ), then you may hand in supplemental printed material to the TA at the beginning of class.
+
+5.      Make sure that your name and your section appear at the beginning of each of your files.
+Your program should also display this information when it runs.
